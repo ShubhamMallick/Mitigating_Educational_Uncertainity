@@ -9,7 +9,7 @@ from datetime import datetime
 # Add the parent directory to the path so we can import from the data package
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data.career_data import CAREER_DATA
-from database.db import get_db
+# from database.db import get_db
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -25,20 +25,22 @@ logger = logging.getLogger(__name__)
 # Database connection will be handled per-request
 
 def get_db_connection():
-    """Get a database connection"""
-    if 'db' not in g:
-        g.db = get_db()
-    return g.db
+    """Get a database connection - MongoDB disabled"""
+    # if 'db' not in g:
+    #     g.db = get_db()
+    # return g.db
+    return None  # MongoDB not available
 
 @app.teardown_appcontext
 def teardown_db(exception):
-    """Close the database connection when the app context is torn down"""
-    db = g.pop('db', None)
-    if db is not None:
-        try:
-            db.client.close()
-        except Exception as e:
-            logger.error(f"Error closing database connection: {e}")
+    """Close the database connection when the app context is torn down - MongoDB disabled"""
+    # db = g.pop('db', None)
+    # if db is not None:
+    #     try:
+    #         db.client.close()
+    #     except Exception as e:
+    #         logger.error(f"Error closing database connection: {e}")
+    pass  # MongoDB not available
 
 # Career data is imported from data.career_data
 
@@ -50,33 +52,9 @@ def home():
 @app.route('/guidance', methods=['GET', 'POST'])
 def guidance():
     """Serve the career guidance page with assessment data"""
-    # Get the latest assessment data from the database
-    try:
-        db = get_db_connection()
-        latest_assessment = db.db.assessments.find_one(
-            {},
-            sort=[('_id', -1)]  # Get the most recent assessment
-        )
-        
-        if latest_assessment:
-            # Create a new dictionary to avoid modifying the original
-            assessment_data = dict(latest_assessment)
-            # Convert ObjectId to string for JSON serialization
-            assessment_data['_id'] = str(assessment_data['_id'])
-            # Convert datetime to string
-            assessment_data['created_at'] = assessment_data['created_at'].isoformat()
-            if 'updated_at' in assessment_data:
-                assessment_data['updated_at'] = assessment_data['updated_at'].isoformat()
-            
-            logger.info(f"Found assessment data for guidance page: {assessment_data['_id']}")
-            return render_template('career_guidance.html', assessment_data=json.dumps(assessment_data) if assessment_data else 'null')
-        else:
-            logger.warning("No assessment data found in the database")
-            return render_template('career_guidance.html', assessment_data='null')
-            
-    except Exception as e:
-        logger.error(f"Error retrieving assessment data: {str(e)}", exc_info=True)
-        return render_template('career_guidance.html', assessment_data='null', error="Error loading assessment data")
+    # MongoDB disabled - skip database retrieval
+    logger.info("Guidance page served without database (MongoDB disabled)")
+    return render_template('career_guidance.html', assessment_data='null')
 
 @app.route('/api/career-assessment', methods=['POST'])
 def process_assessment():
@@ -140,15 +118,20 @@ def process_assessment():
             'updated_at': datetime.utcnow()
         }
 
-        # Save to database
+        # Save to database - MongoDB disabled, using in-memory only
         try:
             db = get_db_connection()
-            result = db.db.assessments.insert_one(assessment_doc)
-            assessment_doc['_id'] = str(result.inserted_id)
-            logger.info(f"Assessment saved with ID: {result.inserted_id}")
+            if db is not None:
+                # MongoDB operations would go here, but disabled
+                pass
+            logger.info("Assessment processed (MongoDB disabled - not saved to database)")
+            import uuid
+            assessment_doc['_id'] = str(uuid.uuid4())
         except Exception as db_error:
-            logger.error(f"Error saving assessment to database: {db_error}")
+            logger.error(f"Database error (MongoDB disabled): {db_error}")
             # Continue even if database save fails
+            import uuid
+            assessment_doc['_id'] = str(uuid.uuid4())
 
         # Prepare response
         response_data = {

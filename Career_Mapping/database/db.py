@@ -1,9 +1,9 @@
 """
 Database configuration and connection management for the Career Mapping application.
-Handles MongoDB connection, collections, and provides utility functions.
+MongoDB connection disabled - using in-memory fallback.
 """
-from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
+# from pymongo import MongoClient
+# from pymongo.errors import ConnectionFailure
 import os
 from dotenv import load_dotenv
 import logging
@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class Database:
+    """Mock Database class - MongoDB disabled"""
     _instance = None
     
     def __new__(cls):
@@ -26,22 +27,31 @@ class Database:
         return cls._instance
     
     def _initialize_connection(self):
-        """Initialize MongoDB connection and collections"""
-        try:
-            # Get MongoDB URI and DB name from environment variables
-            self.MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
-            self.DB_NAME = os.getenv('MONGODB_DB', 'career_guide')
-            
-            # Initialize MongoDB client with connection pooling
-            self.client = MongoClient(
-                self.MONGODB_URI,
-                maxPoolSize=100,
-                minPoolSize=10,
-                connectTimeoutMS=30000,
-                socketTimeoutMS=30000,  # Set a timeout instead of None
-                connect=True,  # Changed from False to True for immediate connection
-                serverSelectionTimeoutMS=5000  # Wait 5 seconds for server selection
-            )
+        """Initialize mock connection - MongoDB disabled"""
+        logger.warning("MongoDB connection disabled - using in-memory fallback")
+        self.db = None
+        self.client = None
+    
+    def get_collection(self, collection_name):
+        """Get a collection by name - MongoDB disabled"""
+        logger.warning(f"MongoDB disabled - cannot access collection: {collection_name}")
+        return None
+    
+    def close_connection(self):
+        """Close the MongoDB connection - MongoDB disabled"""
+        logger.info("MongoDB connection already disabled")
+
+# Create a single instance of the database
+db = Database()
+
+def get_db():
+    """Get the database instance - MongoDB disabled"""
+    return db
+
+def init_db():
+    """Initialize database - MongoDB disabled"""
+    logger.warning("Database initialization skipped - MongoDB disabled")
+    return True
             
             # Test the connection
             self.client.admin.command('ping')

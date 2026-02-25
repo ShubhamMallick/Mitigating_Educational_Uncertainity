@@ -34,11 +34,6 @@ ENV/
 .env.local
 .env.production
 
-# Documentation
-README.md
-LICENSE
-*.md
-
 # Logs
 *.log
 
