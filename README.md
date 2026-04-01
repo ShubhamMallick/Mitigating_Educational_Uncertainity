@@ -16,7 +16,7 @@ This repository is an end-to-end **AI Education** system built around a **Dashbo
 
 ### Prerequisites
 
-- Python 3.10+ recommended
+- Python 3.10.10 recommended
 - A virtual environment (`venv`) is strongly recommended
 
 ### Environment variables
