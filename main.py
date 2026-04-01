@@ -658,20 +658,20 @@ If the user asks about their recommended stream or scores, be sure to mention th
                     temperature=0.7
                 )
 
-            # Extract the AI's response from the response structure
-            if hasattr(response, 'choices') and len(response.choices) > 0:
-                ai_response = str(response.choices[0].message.content)
-            else:
-                ai_response = "I apologize, but I'm having trouble generating a response. Could you please rephrase your question?"
+                # Extract the AI's response from the response structure
+                if hasattr(response, 'choices') and len(response.choices) > 0:
+                    ai_response = str(response.choices[0].message.content)
+                else:
+                    ai_response = "I apologize, but I'm having trouble generating a response. Could you please rephrase your question?"
 
-        except Exception as api_error:
-            logger.error(f"Mistral API error in chat: {str(api_error)}")
+            except Exception as api_error:
+                logger.error(f"Mistral API error in chat: {str(api_error)}")
 
-            # Check if it's an authentication error
-            if "401" in str(api_error) or "Unauthorized" in str(api_error):
-                ai_response = "I'm experiencing authentication issues with the AI service. Please check the MISTRAL_API_KEY configuration."
-            else:
-                ai_response = "I'm sorry, I encountered an error while processing your request. Please try again later."
+                # Check if it's an authentication error
+                if "401" in str(api_error) or "Unauthorized" in str(api_error):
+                    ai_response = "I'm experiencing authentication issues with the AI service. Please check the MISTRAL_API_KEY configuration."
+                else:
+                    ai_response = "I'm sorry, I encountered an error while processing your request. Please try again later."
 
         # Add AI response to conversation
         conversation['messages'].append({
