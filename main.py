@@ -68,7 +68,7 @@ arts_recommender = ArtsCourseRecommender()
 quiz_service = QuizService()
 
 # Setup templates for Interest and Quizzes section
-interest_quizzes_templates = Jinja2Templates(directory=r"d:\AI_in_education\Interest_and_quizzes\templates")
+interest_quizzes_templates = Jinja2Templates(directory=os.path.join("Interest_and_quizzes", "templates"))
 
 # Setup templates for Career Mapping section
 career_templates = Jinja2Templates(directory=os.path.join("Career_Mapping", "templates"))
@@ -486,6 +486,13 @@ async def predict(data: "PredictionRequest"):
 async def get_insights(request: "InsightsRequest"):
     """Generate personalized career guidance and insights"""
     try:
+        # Check if Mistral client is available
+        if client is None:
+            return JSONResponse({
+                'status': 'error',
+                'message': 'AI features are disabled. MISTRAL_API_KEY not configured.'
+            }, status_code=503)
+        
         # Use the class method to generate insights prompt
         prompt = stream_recommender.get_insights(request)
 
@@ -639,13 +646,17 @@ If the user asks about their recommended stream or scores, be sure to mention th
 
         logger.info("Sending request to Mistral API with user context")
 
-        # Generate AI response using the correct API method
-        try:
-            response = client.chat.complete(
-                model="mistral-tiny",
-                messages=messages,
-                temperature=0.7
-            )
+        # Check if Mistral client is available
+        if client is None:
+            ai_response = "AI chat is currently unavailable. Please configure MISTRAL_API_KEY."
+        else:
+            # Generate AI response using the correct API method
+            try:
+                response = client.chat.complete(
+                    model="mistral-tiny",
+                    messages=messages,
+                    temperature=0.7
+                )
 
             # Extract the AI's response from the response structure
             if hasattr(response, 'choices') and len(response.choices) > 0:
@@ -1069,43 +1080,43 @@ async def stream_selection_html():
 
 @app.get("/training/", response_class=HTMLResponse)
 async def training_page():
-    with open("d:/AI_in_education/training/templates/index.html", "r", encoding="utf-8") as f:
+    with open("training/templates/index.html", "r", encoding="utf-8") as f:
         content = f.read()
     return HTMLResponse(content)
 
 @app.get("/arts/courses/", response_class=HTMLResponse)
 async def arts_courses_page():
-    with open("d:/AI_in_education/Arts_dataset/static/arts_course_recommendation.html", "r", encoding="utf-8") as f:
+    with open("Arts_dataset/static/arts_course_recommendation.html", "r", encoding="utf-8") as f:
         content = f.read()
     return HTMLResponse(content)
 
 @app.get("/commerce/courses/", response_class=HTMLResponse)
 async def commerce_courses_page():
-    with open("d:/AI_in_education/Commerce_dataset/templates/commerce_course_recommendation_.html", "r", encoding="utf-8") as f:
+    with open("Commerce_dataset/templates/commerce_course_recommendation_.html", "r", encoding="utf-8") as f:
         content = f.read()
     return HTMLResponse(content)
 
 @app.get("/pcm/courses/", response_class=HTMLResponse)
 async def pcm_courses_page():
-    with open("d:/AI_in_education/PCM_dataset/templates/pcm_course_recommendation.html", "r", encoding="utf-8") as f:
+    with open("pcm_dataset/templates/pcm_recommendation.html", "r", encoding="utf-8") as f:
         content = f.read()
     return HTMLResponse(content)
 
 @app.get("/pcb/courses/", response_class=HTMLResponse)
 async def pcb_courses_page():
-    with open("d:/AI_in_education/PCB_dataset/templates/pcb_course_recommendation.html", "r", encoding="utf-8") as f:
+    with open("pcb_dataset/templates/pcb_recommendation.html", "r", encoding="utf-8") as f:
         content = f.read()
     return HTMLResponse(content)
 
 @app.get("/vocational/courses/", response_class=HTMLResponse)
 async def vocational_courses_page():
-    with open("d:/AI_in_education/Vocational_dataset/templates/vocational_course_recommendation.html", "r", encoding="utf-8") as f:
+    with open("Vocational_dataset/templates/vocational_recommendation.html", "r", encoding="utf-8") as f:
         content = f.read()
     return HTMLResponse(content)
 
 @app.get("/training/templates/index.html", response_class=HTMLResponse)
 async def index_html():
-    with open("d:/AI_in_education/training/templates/index.html", "r", encoding="utf-8") as f:
+    with open("training/templates/index.html", "r", encoding="utf-8") as f:
         content = f.read()
     return HTMLResponse(content)
 
